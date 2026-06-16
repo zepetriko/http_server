@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
@@ -108,4 +109,37 @@ func TestJWTExpired(t *testing.T) {
 		t.Fatal("this returns means no error occured, but should")
 	}
 
+}
+
+func TestGetBearerToken(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("Authorization", "Bearer my-token")
+
+	token, err := GetBearerToken(headers)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if token != "my-token" {
+		t.Fatalf("expected my-token, got %s", token)
+	}
+}
+
+func TestGetBearerTokenMissingHeader(t *testing.T) {
+	headers := http.Header{}
+
+	_, err := GetBearerToken(headers)
+	if err == nil {
+		t.Fatal("token should be missing header")
+	}
+}
+
+func TestGetBearerTokenBadFormat(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("Authorization", "my-token")
+
+	_, err := GetBearerToken(headers)
+	if err == nil {
+		t.Fatal("token should be in a bad format")
+	}
 }
